@@ -3,6 +3,7 @@ library(tidyverse)
 library(vroom)
 library(here)
 library(janitor)
+library(DataExplorer)
 
 #Load the 4 data files and fix the y scaling
 files <- list.files(here("data_raw"), pattern = ".txt")
@@ -75,6 +76,23 @@ for (i in ids) {
   ggsave(here("eda","individual_xy_plots",paste0(i,".png")))
 }
 
+ds %>% filter(por_x < 640 & por_x > 0) %>% 
+  ggplot(mapping = aes(x = group, y = por_y)) + stat_summary(fun = "mean_se")
+
+ggplot(ds, aes(id, por_x)) + 
+  stat_summary(fun.data = mean_se, geom = "pointrange")
+
+ggplot(ds, aes(id, por_y)) + 
+  stat_summary(fun.data = mean_se, geom = "bar") +
+  stat_summary(fun.data = mean_se, geom = "errorbar")
+
+ggplot(ds, aes(x= id, y = stat(prop), group = 1)) + geom_bar()
+ggplot(ds, aes(x= id, y = stat(count), group = 1)) + geom_bar()
 
 
+introduce(ds)
+plot_intro(ds)
+plot_bar(ds)
+plot_histogram(ds)
 
+#vis_expect
