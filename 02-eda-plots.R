@@ -38,6 +38,10 @@ ds %>% filter(por_x < 640 & por_x > 0) %>%
 ds %>% filter(por_x < 640 & por_x > 0) %>% 
   ggplot(mapping = aes(color = id, x = por_x)) + geom_freqpoly()
 
+#Normalize counts with y = ..density..
+ds %>% filter(por_x < 640 & por_x > 0) %>% 
+  ggplot(mapping = aes(color = id, x = por_x, y = ..density..)) + geom_freqpoly(binwidth = 20)
+
 #Point graph
 ds %>% filter(por_x < 640 & por_x > 0) %>% ggplot(mapping = aes(x = por_x, y = por_y)) + geom_point()
 
