@@ -88,11 +88,12 @@ ds_cleaned %>%
 
 #But if you have more than 5-6 individual graphs, 
 #it might be better to save them to a file to inspect one at a time
-ids <- unique(ds$id)
+ids <- unique(ds_cleaned$id)
 for (i in ids) {
   ds_cleaned %>% filter(id == i) %>% 
     ggplot(mapping = aes(x = por_x, y = por_y)) + 
     geom_bin2d() + 
+    facet_wrap(~ cond) + 
     xlim(0, 640) + 
     ylim(0,480)
   ggsave(here("eda","individual_xy_plots",paste0(i,".png")))
