@@ -86,6 +86,9 @@ ds_cleaned %>%
   xlim(0, 640) + 
   ylim(0, 480)
 
+#Saving your last ggplot to disk is easy
+ggsave(here("eda","all_ppts_xy_plots.pdf"))
+
 #But if you have more than 5-6 individual graphs, 
 #it might be better to save them to a file to inspect one at a time
 ids <- unique(ds_cleaned$id)
@@ -99,5 +102,42 @@ for (i in ids) {
   ggsave(here("eda","individual_xy_plots",paste0(i,".png")))
 }
 
+#Writing a lot of individual files can get to be annoying, 
+#but it's easy to put together different graphs with the patchwork package
+library(patchwork)
+
+ids <- unique(ds_cleaned$id)
+for (i in ids) {
+  
+  #Plots can be saved to objects
+  p1 <- ds_cleaned %>% filter(id == i) %>% 
+    ggplot(mapping = aes(x = por_x, y = por_y)) + 
+    geom_bin2d() + 
+    facet_wrap(~ cond) + 
+    xlim(0, 640) + 
+    ylim(0,480)
+  
+  #Save each plot as a different object
+  p2 <- ds_cleaned %>% filter(id == i) %>% 
+    ggplot(mapping = aes(x = por_x)) + 
+    geom_histogram() +
+    facet_wrap(~ cond) + 
+    xlim(0, 640) 
+  
+  #Save plot 3
+  p3 <- ds_cleaned %>% filter(id == i) %>% 
+    ggplot(mapping = aes(x = por_y)) + 
+    geom_histogram() +
+    facet_wrap(~ cond) + 
+    xlim(0, 480)
+  
+  #Divide means put plots one on top of another
+  p1/(p2 + p3)
+  
+  #p1 + p2 + p3 means but them side by side, but that won't work well in our case
+  #p1/p2/p3 means stack them all vertically
+
+  ggsave(here("eda","individual_composite",paste0(i,".png")))
+}
 
 
