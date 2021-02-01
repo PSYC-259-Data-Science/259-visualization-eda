@@ -109,7 +109,7 @@ library(patchwork)
 ids <- unique(ds_cleaned$id)
 for (i in ids) {
   
-  #Plots can be saved to objects
+  #Plots can be stored to objects
   p1 <- ds_cleaned %>% filter(id == i) %>% 
     ggplot(mapping = aes(x = por_x, y = por_y)) + 
     geom_bin2d() + 
@@ -117,14 +117,14 @@ for (i in ids) {
     xlim(0, 640) + 
     ylim(0,480)
   
-  #Save each plot as a different object
+  #Store plot 2
   p2 <- ds_cleaned %>% filter(id == i) %>% 
     ggplot(mapping = aes(x = por_x)) + 
     geom_histogram() +
     facet_wrap(~ cond) + 
     xlim(0, 640) 
   
-  #Save plot 3
+  #Store plot 3
   p3 <- ds_cleaned %>% filter(id == i) %>% 
     ggplot(mapping = aes(x = por_y)) + 
     geom_histogram() +
@@ -132,10 +132,12 @@ for (i in ids) {
     xlim(0, 480)
   
   #Divide means put plots one on top of another
+  #Add means put them side by side
+  #Any guesses what this does?
   p1/(p2 + p3)
   
-  #p1 + p2 + p3 means but them side by side, but that won't work well in our case
-  #p1/p2/p3 means stack them all vertically
+  #p1 + p2 + p3 means panel horizontally
+  #p1/p2/p3 means panel vertically
 
   ggsave(here("eda","individual_composite",paste0(i,".png")))
 }
