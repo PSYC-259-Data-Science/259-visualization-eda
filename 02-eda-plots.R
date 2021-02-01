@@ -6,7 +6,7 @@ library(janitor)
 library(DataExplorer)
 library(visdat)
 
-#Load the 4 data files and fix the y scaling
+#Load the 4 data files
 files <- list.files(here("data_raw"), pattern = ".txt")
 ds <- vroom(here("data_raw",files), id = "file", delim = " ", skip = 6) 
 ds <- ds %>% rename(scene_time = `sceneQTtime(d:h:m:s.tv/ts)`, 
@@ -47,48 +47,50 @@ ds %>% ggplot(mapping = aes(x = por_x)) + geom_histogram() + xlim(0, 640)
 ds %>% filter(por_x < 640 & por_x > 0) %>% 
   ggplot(mapping = aes(x = por_x)) + geom_histogram(binwidth = 10)
 
+ds %>% count(cut_width(por_y, 50))
+
 #A boxplot might be a better first glance (note change from x to y for mapping)
 ds %>% ggplot(mapping = aes(y = por_x)) + geom_boxplot()
 ds %>% filter(por_x < 640 & por_x > 0) %>% ggplot(mapping = aes(y = por_x)) + geom_boxplot()
 
 #At this point, I'm convinced -- let's set the impossible por_x and por_y values to NA 
 #so that we can stop filtering
-ds <- ds %>% mutate(
+ds_cleaned <- ds %>% mutate(
   por_x = ifelse(por_x >= 0 & por_x < 640, por_x, NA),
   por_y = ifelse(por_y >= 0 & por_y < 480, por_y, NA)
 )
 
 #Might be better to check by participant
 #Change the mapping to include x for id to divide data
-ds %>% ggplot(mapping = aes(x = id, y = por_x)) + geom_boxplot()
+ds_cleaned %>% ggplot(mapping = aes(x = id, y = por_x)) + geom_boxplot()
 #Now we can better see the outliers and distributions in the remaining data
 
 #Or use freq_poly to overlay multiple histogram lines
-ds %>%  ggplot(mapping = aes(color = id, x = por_x)) + geom_freqpoly()
+ds_cleaned %>%  ggplot(mapping = aes(color = id, x = por_x)) + geom_freqpoly()
 
 #Normalize counts with y = stat(density)
-ds %>%  ggplot(mapping = aes(color = id, x = por_x, y = stat(density))) + geom_freqpoly()
+ds_cleaned %>%  ggplot(mapping = aes(color = id, x = por_x, y = stat(density))) + geom_freqpoly()
 
 #Scatter plot
-ds %>% ggplot(mapping = aes(x = por_x, y = por_y)) + geom_point()
+ds_cleaned %>% ggplot(mapping = aes(x = por_x, y = por_y)) + geom_point()
 
 #for overlapping data, try bin2d
-ds %>%  ggplot(mapping = aes(x = por_x, y = por_y)) + geom_bin2d()
+ds_cleaned %>%  ggplot(mapping = aes(x = por_x, y = por_y)) + geom_bin2d()
 
 #facets are incredibly useful for eda
 #when your plot commands start to get long, make sure the + ends each line 
-ds %>% filter(por_x < 640 & por_x > 0) %>% 
+ds_cleaned %>% 
   ggplot(mapping = aes(x = por_x, y = por_y)) + 
   geom_bin2d() + 
   facet_wrap(~ id) +
   xlim(0, 640) + 
-  ylim(0,480)
+  ylim(0, 480)
 
 #But if you have more than 5-6 individual graphs, 
 #it might be better to save them to a file to inspect one at a time
 ids <- unique(ds$id)
 for (i in ids) {
-  ds %>% filter(por_x < 640 & por_x > 0, id == i) %>% 
+  ds_cleaned %>% filter(id == i) %>% 
     ggplot(mapping = aes(x = por_x, y = por_y)) + 
     geom_bin2d() + 
     xlim(0, 640) + 
@@ -96,17 +98,5 @@ for (i in ids) {
   ggsave(here("eda","individual_xy_plots",paste0(i,".png")))
 }
 
-ds %>% filter(por_x < 640 & por_x > 0) %>% 
-  ggplot(mapping = aes(x = group, y = por_y)) + stat_summary(fun = "mean_se")
-
-ggplot(ds, aes(id, por_x)) + 
-  stat_summary(fun.data = mean_se, geom = "pointrange")
-
-ggplot(ds, aes(id, por_y)) + 
-  stat_summary(fun.data = mean_se, geom = "bar") +
-  stat_summary(fun.data = mean_se, geom = "errorbar")
-
-ggplot(ds, aes(x= id, y = stat(prop), group = 1)) + geom_bar()
-ggplot(ds, aes(x= id, y = stat(count), group = 1)) + geom_bar()
 
 
