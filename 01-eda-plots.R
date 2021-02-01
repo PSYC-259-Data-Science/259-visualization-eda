@@ -3,8 +3,6 @@ library(tidyverse)
 library(vroom)
 library(here)
 library(janitor)
-library(DataExplorer)
-library(visdat)
 
 #Load the 4 data files
 files <- list.files(here("data_raw"), pattern = ".txt")
@@ -17,13 +15,15 @@ ds <- ds %>% mutate(file = str_extract(file, "\\d\\d\\d_(search|walk)")) %>%
   mutate(cond = as.factor(cond))
   
 #Let's first use the DataExplorer package to give us a snapshot of the entire dataset
-plot_intro(ds)
-plot_bar(ds)
-plot_histogram(ds)
+library(DataExplorer)
+plot_intro(ds) #Basic stats about columns and rows and missing values
+plot_bar(ds) #Frequencies of all categorical variables
+plot_histogram(ds) #Histograms of all continuous variables
 
 #Vis_dat and vis_miss also give us useful snapshots
-vis_dat(ds)
-vis_miss(ds)
+library(visdat)
+vis_dat(ds) #similar to plot_intro, but gives a snapshot of each column
+vis_miss(ds) #visualiza missing
 
 #Vis_expect is a little more customizable
 #Visualize both expected values and missing at the same time
@@ -141,5 +141,3 @@ for (i in ids) {
 
   ggsave(here("eda","individual_composite",paste0(i,".png")))
 }
-
-
