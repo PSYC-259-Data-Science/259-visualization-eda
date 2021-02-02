@@ -16,7 +16,6 @@ ds <- ds %>% mutate(file = str_extract(file, "\\d\\d\\d_(search|walk)")) %>%
   
 #Let's first use the DataExplorer package to give us a snapshot of the entire dataset
 library(DataExplorer)
-plot_intro(ds) #Basic stats about columns and rows and missing values
 plot_bar(ds) #Frequencies of all categorical variables
 plot_histogram(ds) #Histograms of all continuous variables
 
@@ -27,10 +26,9 @@ vis_miss(ds) #visualize missing
 
 #Vis_expect is a little more customizable
 #Visualize both expected values and missing at the same time
-vis_expect(select(ds, por_x:por_y), ~ .x > 0 & .x < 640)
-vis_expect(select(ds, avg_fps), ~ .x %in% c(29.96, 29.97))
+vis_expect(select(ds, por_x), ~ .x > 0 & .x < 640)
 
-#Let's plot our own histogram
+#Let's plot our own histogram with ggplot
 
 #Simplest histogram
 ggplot(data = ds, aes(x = por_x)) + geom_histogram()
@@ -48,8 +46,8 @@ ds %>% filter(por_x < 640 & por_x > 0) %>%
   ggplot(aes(x = por_x)) + geom_histogram(binwidth = 10)
 
 #A boxplot might be a better first glance (note change from x to y for mapping)
-ds %>% ggplot(aes(x = por_x)) + geom_boxplot()
-ds %>% filter(por_x < 640 & por_x > 0) %>% ggplot(mapping = aes(y = por_x)) + geom_boxplot()
+ds %>% filter(por_x < 640 & por_x > 0) %>% 
+  ggplot(aes(x = por_x)) + geom_boxplot()
 
 #At this point, I'm convinced -- let's set the impossible por_x and por_y values to NA 
 #so that we can stop filtering
@@ -58,19 +56,20 @@ ds_cleaned <- ds %>% mutate(
   por_y = ifelse(por_y >= 0 & por_y < 480, por_y, NA)
 )
 
-#Might be better to check by participant
-#Change the mapping to include x for id to divide data
-ds_cleaned %>% ggplot(mapping = aes(x = id, y = por_x)) + geom_boxplot()
+#Might be better to check by participant and condition
+#Adding aes elements for id (x) and cond (fill) will change how the data are grouped
+ds_cleaned %>% ggplot(aes(x = id, fill = cond, y = por_x)) + geom_boxplot()
 #Now we can better see the outliers and distributions in the remaining data
 
-#Scatter plot
-ds_cleaned %>% ggplot(mapping = aes(x = por_x, y = por_y)) + geom_point()
+#Scatter plot - use geom_point
+ds_cleaned %>% ggplot(aes(x = por_x, y = por_y)) + geom_point()
 
-#for overlapping data, try bin2d
+#For overlapping or dense data, try bin2d
 ds_cleaned %>%  ggplot(mapping = aes(x = por_x, y = por_y)) + geom_bin2d()
 
 #facets are incredibly useful for eda
-#when your plot commands start to get long, make sure the + ends each line 
+#when your plot commands start to get long, make sure the + ends each line
+#Just like with the pipe, starting a line with + will lead to a syntax error
 ds_cleaned %>% 
   ggplot(mapping = aes(x = por_x, y = por_y)) + 
   geom_bin2d() + 
@@ -83,16 +82,22 @@ ggsave(here("eda","all_ppts_xy_plots.pdf"))
 
 #But if you have more than 5-6 individual graphs, 
 #it might be better to save them to a file to inspect one at a time
-ids <- unique(ds_cleaned$id)
+ids <- unique(ds_cleaned$id) #What does this do?
 for (i in ids) {
   ds_cleaned %>% filter(id == i) %>% 
-    ggplot(mapping = aes(x = por_x, y = por_y)) + 
+    ggplot(aes(x = por_x, y = por_y)) + 
     geom_bin2d() + 
     facet_wrap("cond") + 
     xlim(0, 640) + 
     ylim(0,480)
   ggsave(here("eda","individual_xy_plots",paste0(i,".png")))
 }
+
+
+### SKIP THIS DURING CLASS
+# Faceting is a nice tool if you want to panel the same figure together
+# If you want to panel different types of figures together, I suggest patchwork
+
 
 #Writing a lot of individual files can get to be annoying, 
 #but it's easy to put together different graphs with the patchwork package
