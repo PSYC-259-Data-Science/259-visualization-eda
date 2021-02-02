@@ -21,7 +21,7 @@ plot_histogram(ds) #Histograms of all continuous variables
 
 #Vis_dat and vis_miss also give us useful snapshots
 library(visdat)
-vis_dat(ds) #similar to plot_intro, but gives a snapshot of each column
+vis_dat(ds) #snapshot of each column
 vis_miss(ds) #visualize missing
 
 #Vis_expect is a little more customizable
@@ -41,11 +41,7 @@ ds %>% filter(por_x < 640 & por_x > 0) %>%
 #Or we can adjust the graph axes to ignore the out of range data
 ds %>% ggplot(aes(x = por_x)) + geom_histogram() + xlim(0, 640)
 
-#Altering the bin width might be helpful rather than relying on the default
-ds %>% filter(por_x < 640 & por_x > 0) %>% 
-  ggplot(aes(x = por_x)) + geom_histogram(binwidth = 10)
-
-#A boxplot might be a better first glance (note change from x to y for mapping)
+#A boxplot might be a better first glance
 ds %>% filter(por_x < 640 & por_x > 0) %>% 
   ggplot(aes(x = por_x)) + geom_boxplot()
 
@@ -60,6 +56,17 @@ ds_cleaned <- ds %>% mutate(
 #Adding aes elements for id (x) and cond (fill) will change how the data are grouped
 ds_cleaned %>% ggplot(aes(x = id, fill = cond, y = por_x)) + geom_boxplot()
 #Now we can better see the outliers and distributions in the remaining data
+
+#Reference lines can also help
+ds_cleaned %>% 
+  ggplot(aes(x = id, fill = cond, y = por_x)) + 
+  geom_boxplot() + 
+  geom_hline(yintercept = 320)
+
+#For categorical data, geom_bar will automatically plot counts by category
+ds_cleaned %>% 
+  mutate(avg_fps = factor(avg_fps, levels = c(29.96, 29.97))) %>% 
+  ggplot(aes(avg_fps)) + geom_bar()
 
 #Scatter plot - use geom_point
 ds_cleaned %>% ggplot(aes(x = por_x, y = por_y)) + geom_point()
@@ -94,7 +101,7 @@ for (i in ids) {
 }
 
 
-### SKIP THIS DURING CLASS
+### TOO LONG OF AN EXAMPLE FOR CLASS, BUT LEAVING IT FOR REFERENCE
 # Faceting is a nice tool if you want to panel the same figure together
 # If you want to panel different types of figures together, I suggest patchwork
 
