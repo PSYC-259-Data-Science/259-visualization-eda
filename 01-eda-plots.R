@@ -30,7 +30,6 @@ vis_expect(select(ds, por_x), ~ .x > 0 & .x < 640)
 #The ~ .x part is like what we used in map. It specifies a formula where .x stands in for the column we are visualizing
 
 
-
 #Let's plot our own histogram with ggplot
 
 #Simplest histogram
@@ -47,7 +46,7 @@ ds %>% ggplot(aes(x = por_x)) + geom_histogram() + xlim(0, 640)
 
 #A boxplot might be a better first glance
 ds %>% filter(por_x < 640 & por_x > 0) %>% 
-  ggplot(aes(x = por_x)) + geom_boxplot()
+  ggplot(aes(y = por_x)) + geom_boxplot()
 
 #What if we wanted to change the orientation of the boxplot?
 
@@ -60,7 +59,7 @@ ds_cleaned <- ds %>% mutate(
 
 #Might be better to check by participant and condition
 #Adding aes elements for id (x) and cond (fill) will change how the data are grouped
-ds_cleaned %>% ggplot(aes(x = id, fill = cond, y = por_x)) + geom_boxplot()
+ds_cleaned %>% ggplot(aes(x = cond, y = por_x)) + geom_boxplot()
 #Now we can better see the outliers and distributions in the remaining data
 
 #Reference lines can also help
@@ -68,8 +67,8 @@ ds_cleaned %>% ggplot(aes(x = id, fill = cond, y = por_x)) + geom_boxplot()
 #Just like with the pipe, starting a line with + will lead to a syntax error
 ds_cleaned %>% 
   ggplot(aes(x = id, fill = cond, y = por_x)) + 
-  geom_boxplot() + 
   geom_hline(yintercept = 320) + 
+  geom_boxplot() + 
   ylim(0, 640)
 
 #For categorical data, geom_bar will automatically plot counts by category
@@ -86,8 +85,8 @@ ds_cleaned %>%  ggplot(mapping = aes(x = por_x, y = por_y)) + geom_bin2d()
 #facets are incredibly useful for eda
 ds_cleaned %>% 
   ggplot(mapping = aes(x = por_x, y = por_y)) + 
-  geom_bin2d() + 
-  facet_wrap("id") +
+  geom_point() + 
+  facet_wrap(c("id","cond")) +
   xlim(0, 640) + 
   ylim(0, 480)
 
