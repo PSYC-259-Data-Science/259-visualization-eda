@@ -72,9 +72,8 @@ ds_cleaned %>%
   ylim(0, 640)
 
 #For categorical data, geom_bar will automatically plot counts by category
-ds_cleaned %>% 
-  mutate(avg_fps = factor(avg_fps, levels = c(29.96, 29.97))) %>% 
-  ggplot(aes(avg_fps)) + geom_bar()
+ds_cleaned %>%
+  ggplot(aes(id)) + geom_bar()
 
 #Scatter plot - use geom_point
 ds_cleaned %>% ggplot(aes(x = por_x, y = por_y)) + geom_point()
